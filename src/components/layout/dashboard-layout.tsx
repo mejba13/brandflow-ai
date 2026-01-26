@@ -7,10 +7,9 @@ import { Header } from "./header";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  title?: string;
 }
 
-export function DashboardLayout({ children, title }: DashboardLayoutProps) {
+export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
@@ -83,7 +82,6 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         )}
       >
         <Header
-          title={title}
           sidebarCollapsed={sidebarCollapsed}
           onMenuClick={toggleMobileMenu}
         />
