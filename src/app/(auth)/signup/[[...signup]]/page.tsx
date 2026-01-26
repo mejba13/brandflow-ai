@@ -1,17 +1,58 @@
 "use client";
 
-import { Rocket, CheckCircle2, Gift, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Rocket, CheckCircle2, Gift, Mail, Lock, User, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
 
 // Check if Clerk is configured
 const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 const isClerkConfigured = clerkPubKey && clerkPubKey.startsWith("pk_");
 
 export default function SignUpPage() {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const { register, isAuthenticated, isLoading } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    // Validation
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const result = await register({
+      email,
+      password,
+      firstName,
+      lastName,
+    });
+
+    if (result.success) {
+      router.push("/dashboard");
+    } else {
+      setError(result.error || "An error occurred");
+      setIsSubmitting(false);
+    }
+  };
 
   // If Clerk is configured, use it
   if (isClerkConfigured) {
@@ -105,7 +146,16 @@ export default function SignUpPage() {
     );
   }
 
-  // Fallback UI when Clerk is not configured
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 text-[#10b981] animate-spin" />
+      </div>
+    );
+  }
+
+  // Fallback UI when Clerk is not configured (custom auth)
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -128,9 +178,21 @@ export default function SignUpPage() {
         <span className="text-sm font-medium text-[#0f172a]">14-day free trial with all Pro features</span>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
       {/* Social Login Buttons */}
       <div className="space-y-3">
-        <button className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl border border-[#e2e8f0] hover:bg-[#f8fafc] hover:border-[#6366f1]/30 transition-all duration-300">
+        <button
+          type="button"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl border border-[#e2e8f0] hover:bg-[#f8fafc] hover:border-[#6366f1]/30 transition-all duration-300 opacity-50 cursor-not-allowed"
+          disabled
+        >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
@@ -152,7 +214,11 @@ export default function SignUpPage() {
           <span className="font-medium text-[#0f172a]">Continue with Google</span>
         </button>
 
-        <button className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl border border-[#e2e8f0] hover:bg-[#f8fafc] hover:border-[#6366f1]/30 transition-all duration-300">
+        <button
+          type="button"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl border border-[#e2e8f0] hover:bg-[#f8fafc] hover:border-[#6366f1]/30 transition-all duration-300 opacity-50 cursor-not-allowed"
+          disabled
+        >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
           </svg>
@@ -168,18 +234,34 @@ export default function SignUpPage() {
       </div>
 
       {/* Email Form */}
-      <form className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-[#475569] mb-2">Full name</label>
-          <div className="relative">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94a3b8]" />
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="John Doe"
-              className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-[#e2e8f0] focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/20 outline-none transition-all duration-300"
-            />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-[#475569] mb-2">First name</label>
+            <div className="relative">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94a3b8]" />
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="John"
+                required
+                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-[#e2e8f0] focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/20 outline-none transition-all duration-300"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#475569] mb-2">Last name</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Doe"
+                required
+                className="w-full px-4 py-3.5 rounded-xl border border-[#e2e8f0] focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/20 outline-none transition-all duration-300"
+              />
+            </div>
           </div>
         </div>
 
@@ -192,6 +274,7 @@ export default function SignUpPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
+              required
               className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-[#e2e8f0] focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/20 outline-none transition-all duration-300"
             />
           </div>
@@ -206,21 +289,34 @@ export default function SignUpPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
+              required
+              minLength={6}
               className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-[#e2e8f0] focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/20 outline-none transition-all duration-300"
             />
           </div>
+          <p className="text-xs text-[#94a3b8] mt-1">At least 6 characters</p>
         </div>
 
         <button
           type="submit"
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-white transition-all duration-300 hover:shadow-xl"
+          disabled={isSubmitting}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-white transition-all duration-300 hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed"
           style={{
             background: "linear-gradient(135deg, #10b981 0%, #6366f1 100%)",
             boxShadow: "0 10px 30px -10px rgba(16, 185, 129, 0.5)",
           }}
         >
-          <span>Create Account</span>
-          <ArrowRight className="w-5 h-5" />
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Creating account...</span>
+            </>
+          ) : (
+            <>
+              <span>Create Account</span>
+              <ArrowRight className="w-5 h-5" />
+            </>
+          )}
         </button>
       </form>
 

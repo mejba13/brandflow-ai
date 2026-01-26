@@ -20,16 +20,17 @@ export interface SeedUser {
   company: string;
   role: "owner" | "admin" | "editor" | "viewer";
   avatar?: string;
+  avatarUrl?: string;
   plan: "starter" | "pro" | "business";
   createdAt: string;
 }
 
 export const seedCurrentUser: SeedUser = {
   id: "user_001",
-  firstName: "Sarah",
-  lastName: "Mitchell",
-  email: "sarah@innovatemarketing.co",
-  company: "Innovate Marketing Co",
+  firstName: "Engr Mejba",
+  lastName: "Ahmed",
+  email: "mejba@brandflowai.com",
+  company: "BrandFlow AI",
   role: "owner",
   plan: "pro",
   createdAt: "2024-01-01",
@@ -41,8 +42,8 @@ export const seedTeamMembers: SeedUser[] = [
     id: "user_002",
     firstName: "Marcus",
     lastName: "Chen",
-    email: "marcus@innovatemarketing.co",
-    company: "Innovate Marketing Co",
+    email: "marcus@brandflowai.com",
+    company: "BrandFlow AI",
     role: "admin",
     plan: "pro",
     createdAt: "2024-01-05",
@@ -51,8 +52,8 @@ export const seedTeamMembers: SeedUser[] = [
     id: "user_003",
     firstName: "Jennifer",
     lastName: "Williams",
-    email: "jennifer@innovatemarketing.co",
-    company: "Innovate Marketing Co",
+    email: "jennifer@brandflowai.com",
+    company: "BrandFlow AI",
     role: "editor",
     plan: "pro",
     createdAt: "2024-01-10",
@@ -79,9 +80,9 @@ export const seedSocialAccounts: SeedSocialAccount[] = [
   {
     id: "social_001",
     platform: "linkedin",
-    username: "innovate-marketing-co",
-    displayName: "Innovate Marketing Co",
-    profileUrl: "https://linkedin.com/company/innovate-marketing-co",
+    username: "brandflow-ai",
+    displayName: "BrandFlow AI",
+    profileUrl: "https://linkedin.com/company/brandflow-ai",
     status: "connected",
     lastSync: "2 hours ago",
     followers: "24.8K",
@@ -89,9 +90,9 @@ export const seedSocialAccounts: SeedSocialAccount[] = [
   {
     id: "social_002",
     platform: "twitter",
-    username: "@InnovateMktg",
-    displayName: "Innovate Marketing",
-    profileUrl: "https://x.com/InnovateMktg",
+    username: "@BrandFlowAI",
+    displayName: "BrandFlow AI",
+    profileUrl: "https://x.com/BrandFlowAI",
     status: "connected",
     lastSync: "45 minutes ago",
     followers: "18.2K",
@@ -99,9 +100,9 @@ export const seedSocialAccounts: SeedSocialAccount[] = [
   {
     id: "social_003",
     platform: "facebook",
-    username: "InnovateMarketingCo",
-    displayName: "Innovate Marketing Co",
-    profileUrl: "https://facebook.com/InnovateMarketingCo",
+    username: "BrandFlowAI",
+    displayName: "BrandFlow AI",
+    profileUrl: "https://facebook.com/BrandFlowAI",
     status: "connected",
     lastSync: "1 hour ago",
     followers: "31.5K",
@@ -109,9 +110,9 @@ export const seedSocialAccounts: SeedSocialAccount[] = [
   {
     id: "social_004",
     platform: "instagram",
-    username: "@innovate.mktg",
-    displayName: "Innovate Marketing",
-    profileUrl: "https://instagram.com/innovate.mktg",
+    username: "@brandflow.ai",
+    displayName: "BrandFlow AI",
+    profileUrl: "https://instagram.com/brandflow.ai",
     status: "connected",
     lastSync: "30 minutes ago",
     followers: "42.3K",
@@ -158,7 +159,7 @@ The bottom line: AI isn't replacing marketers—it's empowering them to do more,
     platforms: ["linkedin", "twitter", "facebook"],
     createdAt: "2024-01-15",
     publishedAt: "2024-01-16",
-    author: "Sarah Mitchell",
+    author: "Engr Mejba Ahmed",
     tags: ["AI", "content marketing", "digital transformation"],
   },
   {
@@ -211,7 +212,7 @@ We're committed to helping you work smarter, not harder. Let AI handle the when,
     platforms: ["linkedin", "twitter", "facebook", "instagram"],
     createdAt: "2024-01-22",
     publishedAt: "2024-01-22",
-    author: "Sarah Mitchell",
+    author: "Engr Mejba Ahmed",
     tags: ["product update", "announcement", "BrandFlow AI"],
   },
   {
@@ -281,7 +282,7 @@ Ready to transform your content strategy? Start your free trial today.`,
     platforms: ["linkedin", "facebook"],
     createdAt: "2024-01-25",
     scheduledFor: "2024-02-01 10:00",
-    author: "Sarah Mitchell",
+    author: "Engr Mejba Ahmed",
     tags: ["case study", "customer success", "BrandFlow AI"],
   },
 ];
@@ -573,7 +574,7 @@ export interface SeedBrandVoice {
 
 export const seedBrandVoice: SeedBrandVoice = {
   description:
-    "Innovate Marketing Co speaks with confidence and expertise while remaining approachable and helpful. We simplify complex marketing concepts without being condescending. Our voice inspires action and builds trust through transparency and real results.",
+    "BrandFlow AI speaks with confidence and expertise while remaining approachable and helpful. We simplify complex marketing concepts without being condescending. Our voice inspires action and builds trust through transparency and real results.",
   toneAttributes: ["Professional", "Approachable", "Innovative", "Results-Driven", "Authentic"],
   targetAudience: "Marketing professionals, small business owners, and entrepreneurs looking to scale their content strategy",
   industry: "Marketing Technology / SaaS",

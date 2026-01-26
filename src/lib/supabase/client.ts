@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 // Client-side Supabase client (uses anon key)
 export function createBrowserClient() {
@@ -13,7 +13,8 @@ export function createBrowserClient() {
 }
 
 // Singleton for browser client
-let browserClient: ReturnType<typeof createClient> | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let browserClient: SupabaseClient<any, any, any> | null = null;
 
 export function getSupabaseBrowserClient() {
   if (!browserClient) {

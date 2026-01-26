@@ -21,14 +21,20 @@ import {
   ArrowRight,
   Grid3X3,
   List,
-  SlidersHorizontal,
   ChevronDown,
   PenTool,
   Send,
   CheckCircle2,
-  LayoutGrid,
   Layers,
   X,
+  TrendingUp,
+  Target,
+  BarChart3,
+  Bookmark,
+  Filter,
+  ArrowUpRight,
+  Wand2,
+  Flame,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,46 +60,50 @@ const statusConfig = {
   draft: {
     label: "Draft",
     icon: PenTool,
-    bg: "bg-slate-100",
-    text: "text-slate-600",
-    dot: "bg-slate-500",
-    gradient: "from-slate-400 to-slate-500",
+    bg: "bg-slate-500/10",
+    text: "text-slate-400",
+    dot: "bg-slate-400",
+    gradient: "from-slate-400 to-slate-600",
+    glow: "rgba(100, 116, 139, 0.3)",
   },
   scheduled: {
     label: "Scheduled",
     icon: Clock,
-    bg: "bg-amber-50",
-    text: "text-amber-600",
-    dot: "bg-amber-500",
+    bg: "bg-amber-500/10",
+    text: "text-amber-400",
+    dot: "bg-amber-400",
     gradient: "from-amber-400 to-orange-500",
+    glow: "rgba(245, 158, 11, 0.3)",
   },
   published: {
     label: "Published",
     icon: CheckCircle2,
-    bg: "bg-emerald-50",
-    text: "text-emerald-600",
-    dot: "bg-emerald-500",
+    bg: "bg-emerald-500/10",
+    text: "text-emerald-400",
+    dot: "bg-emerald-400",
     gradient: "from-emerald-400 to-teal-500",
+    glow: "rgba(16, 185, 129, 0.3)",
   },
 };
 
-// Animation variants
+// Premium animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: "spring" as const, stiffness: 150, damping: 20 },
+    transition: { type: "spring" as const, stiffness: 100, damping: 15 },
   },
 };
+
 
 export default function ContentPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -102,6 +112,7 @@ export default function ContentPage() {
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [mounted, setMounted] = React.useState(false);
   const [showFilters, setShowFilters] = React.useState(false);
+  const [hoveredCard, setHoveredCard] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setMounted(true);
@@ -136,98 +147,204 @@ export default function ContentPage() {
 
   return (
     <motion.div
-      className="space-y-5"
+      className="space-y-6"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
-      {/* Hero Header */}
+      {/* Premium Hero Header */}
       <motion.section
-        className="relative overflow-hidden rounded-2xl"
+        className="relative overflow-hidden rounded-3xl"
         variants={itemVariants}
       >
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(135deg, #0c0f1a 0%, #1a1f3c 50%, #252b4d 100%)",
-          }}
-        />
-
-        {/* Animated Background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            className="absolute -top-20 -right-20 w-[350px] h-[350px] rounded-full"
-            style={{
-              background: "radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 60%)",
-              filter: "blur(50px)",
-            }}
-            animate={mounted ? { y: [0, 25, 0], x: [0, -15, 0], scale: [1, 1.1, 1] } : {}}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute -bottom-16 -left-16 w-[250px] h-[250px] rounded-full"
-            style={{
-              background: "radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 60%)",
-              filter: "blur(40px)",
-            }}
-            animate={mounted ? { y: [0, -20, 0], x: [0, 15, 0] } : {}}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          />
+        {/* Multi-layer gradient background */}
+        <div className="absolute inset-0">
           <div
-            className="absolute inset-0 opacity-[0.03]"
+            className="absolute inset-0"
             style={{
-              backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-              backgroundSize: "28px 28px",
+              background: "linear-gradient(135deg, #030712 0%, #0f172a 40%, #1e1b4b 70%, #0f172a 100%)",
+            }}
+          />
+          {/* Mesh gradient overlay */}
+          <div
+            className="absolute inset-0 opacity-60"
+            style={{
+              background: `
+                radial-gradient(ellipse 80% 50% at 20% 40%, rgba(4, 104, 215, 0.25) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 80% 60%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 30% at 50% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%)
+              `,
             }}
           />
         </div>
 
+        {/* Animated orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full"
+            style={{
+              background: "radial-gradient(circle, rgba(4, 104, 215, 0.3) 0%, transparent 60%)",
+              filter: "blur(80px)",
+            }}
+            animate={mounted ? {
+              y: [0, 30, 0],
+              x: [0, -20, 0],
+              scale: [1, 1.15, 1],
+              opacity: [0.6, 0.8, 0.6]
+            } : {}}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute -bottom-24 -left-24 w-[400px] h-[400px] rounded-full"
+            style={{
+              background: "radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 60%)",
+              filter: "blur(60px)",
+            }}
+            animate={mounted ? { y: [0, -25, 0], x: [0, 20, 0] } : {}}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full"
+            style={{
+              background: "radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 60%)",
+              filter: "blur(50px)",
+            }}
+            animate={mounted ? { scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3] } : {}}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          {/* Grid pattern */}
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+              backgroundSize: "32px 32px",
+            }}
+          />
+
+          {/* Floating particles */}
+          {mounted && [...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 rounded-full bg-white/30"
+              style={{
+                left: `${15 + i * 15}%`,
+                top: `${20 + (i % 3) * 25}%`,
+              }}
+              animate={{
+                y: [0, -20, 0],
+                opacity: [0.2, 0.6, 0.2],
+              }}
+              transition={{
+                duration: 3 + i * 0.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.3,
+              }}
+            />
+          ))}
+        </div>
+
         {/* Content */}
-        <div className="relative z-10 px-6 py-8 lg:px-8 lg:py-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
+        <div className="relative z-10 px-8 py-10 lg:px-10 lg:py-12">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            <div className="space-y-5">
+              {/* Badge */}
+              <motion.div
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
+                style={{
+                  background: "rgba(255, 255, 255, 0.05)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                }}
+                whileHover={{ scale: 1.02 }}
+              >
                 <motion.div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  className="w-6 h-6 rounded-lg flex items-center justify-center"
                   style={{
-                    background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
-                    boxShadow: "0 4px 16px -4px rgba(99, 102, 241, 0.4)",
+                    background: "linear-gradient(135deg, #0468D7 0%, #6366f1 100%)",
                   }}
-                  whileHover={{ rotate: 5, scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 400 }}
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <Layers className="w-5 h-5 text-white" />
+                  <Layers className="w-3.5 h-3.5 text-white" />
                 </motion.div>
-                <span className="text-white/50 text-sm font-medium">Your Creative Hub</span>
+                <span className="text-white/70 text-sm font-medium tracking-wide">Content Hub</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              </motion.div>
+
+              {/* Title */}
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3 tracking-tight">
+                  Content Library
+                </h1>
+                <p className="text-white/50 max-w-lg text-base leading-relaxed">
+                  Your creative command center. Manage{" "}
+                  <span className="text-white/80 font-semibold">{seedContentLibrary.length} pieces</span>{" "}
+                  of content across all platforms with AI-powered insights.
+                </p>
               </div>
 
-              <h1 className="text-2xl lg:text-3xl font-bold text-white">
-                Content Library
-              </h1>
-
-              <p className="text-white/60 max-w-md text-sm leading-relaxed">
-                Manage, organize, and repurpose all your content in one place.
-                You have <span className="text-white font-medium">{seedContentLibrary.length} pieces</span> of content ready.
-              </p>
+              {/* Quick Stats Pills */}
+              <div className="flex items-center gap-3 flex-wrap">
+                {[
+                  { icon: TrendingUp, label: "12% more engagement", color: "#10b981" },
+                  { icon: Target, label: "6 platforms", color: "#0468D7" },
+                  { icon: Flame, label: "3 trending", color: "#f59e0b" },
+                ].map((stat, i) => (
+                  <motion.div
+                    key={i}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.03)",
+                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                    }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + i * 0.1 }}
+                  >
+                    <stat.icon className="w-3.5 h-3.5" style={{ color: stat.color }} />
+                    <span className="text-white/60 text-xs font-medium">{stat.label}</span>
+                  </motion.div>
+                ))}
+              </div>
             </div>
 
+            {/* Action Buttons */}
             <div className="flex items-center gap-3">
+              <motion.button
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-white/70 hover:text-white transition-colors"
+                style={{
+                  background: "rgba(255, 255, 255, 0.05)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                }}
+                whileHover={{ scale: 1.02, backgroundColor: "rgba(255, 255, 255, 0.08)" }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Wand2 className="w-4 h-4" />
+                <span className="text-sm font-medium">AI Assist</span>
+              </motion.button>
+
               <Link href="/dashboard/create">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Button
-                    className="relative overflow-hidden group font-medium h-10"
+                    className="relative overflow-hidden group font-semibold h-12 px-6"
                     style={{
-                      background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)",
-                      boxShadow: "0 4px 20px -4px rgba(99, 102, 241, 0.4)",
+                      background: "linear-gradient(135deg, #0468D7 0%, #1A68D3 50%, #6366f1 100%)",
+                      boxShadow: "0 8px 32px -8px rgba(4, 104, 215, 0.5), 0 0 0 1px rgba(255,255,255,0.1) inset",
                     }}
                   >
                     <motion.div
-                      className="absolute inset-0 bg-white/20"
-                      initial={{ y: "100%" }}
-                      whileHover={{ y: "0%" }}
-                      transition={{ duration: 0.3 }}
+                      className="absolute inset-0"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)",
+                      }}
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: "100%" }}
+                      transition={{ duration: 0.6 }}
                     />
-                    <Plus className="w-4 h-4 mr-2 relative z-10" strokeWidth={2.5} />
+                    <Plus className="w-5 h-5 mr-2 relative z-10" strokeWidth={2.5} />
                     <span className="relative z-10">Create Content</span>
                   </Button>
                 </motion.div>
@@ -237,9 +354,9 @@ export default function ContentPage() {
         </div>
       </motion.section>
 
-      {/* Bento Stats Grid */}
+      {/* Bento Stats Grid - Premium Design */}
       <motion.section
-        className="grid grid-cols-2 lg:grid-cols-4 gap-3"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
         variants={containerVariants}
       >
         {[
@@ -247,19 +364,23 @@ export default function ContentPage() {
             label: "All Content",
             value: statusCounts.all,
             status: null,
-            icon: LayoutGrid,
-            gradient: "from-indigo-500 to-violet-500",
-            shadowColor: "rgba(99, 102, 241, 0.25)",
-            description: "Total pieces",
+            icon: Layers,
+            gradient: "from-[#0468D7] via-[#1A68D3] to-[#6366f1]",
+            shadowColor: "rgba(4, 104, 215, 0.4)",
+            bgGlow: "rgba(4, 104, 215, 0.1)",
+            description: "Total library",
+            trend: "+8%",
           },
           {
             label: "Drafts",
             value: statusCounts.draft,
             status: "draft",
             icon: PenTool,
-            gradient: "from-slate-400 to-slate-500",
-            shadowColor: "rgba(100, 116, 139, 0.25)",
+            gradient: "from-slate-500 to-slate-600",
+            shadowColor: "rgba(100, 116, 139, 0.3)",
+            bgGlow: "rgba(100, 116, 139, 0.08)",
             description: "In progress",
+            trend: null,
           },
           {
             label: "Scheduled",
@@ -267,8 +388,10 @@ export default function ContentPage() {
             status: "scheduled",
             icon: Clock,
             gradient: "from-amber-400 to-orange-500",
-            shadowColor: "rgba(245, 158, 11, 0.25)",
+            shadowColor: "rgba(245, 158, 11, 0.35)",
+            bgGlow: "rgba(245, 158, 11, 0.1)",
             description: "Ready to post",
+            trend: "+2",
           },
           {
             label: "Published",
@@ -276,8 +399,10 @@ export default function ContentPage() {
             status: "published",
             icon: Send,
             gradient: "from-emerald-400 to-teal-500",
-            shadowColor: "rgba(16, 185, 129, 0.25)",
+            shadowColor: "rgba(16, 185, 129, 0.35)",
+            bgGlow: "rgba(16, 185, 129, 0.1)",
             description: "Live content",
+            trend: "+15%",
           },
         ].map((stat) => {
           const Icon = stat.icon;
@@ -288,171 +413,243 @@ export default function ContentPage() {
               key={stat.label}
               onClick={() => setSelectedStatus(stat.status)}
               className={cn(
-                "relative overflow-hidden rounded-xl p-4 text-left transition-all duration-200",
+                "relative overflow-hidden rounded-2xl p-5 text-left transition-all duration-300 group",
                 isActive
-                  ? "bg-white ring-2 ring-indigo-500/30 shadow-lg"
-                  : "bg-white border border-slate-100 hover:border-slate-200 hover:shadow-md"
+                  ? "ring-2 ring-[#0468D7]/40 shadow-xl"
+                  : "hover:shadow-lg"
               )}
+              style={{
+                background: isActive
+                  ? `linear-gradient(135deg, ${stat.bgGlow} 0%, rgba(255,255,255,0.98) 100%)`
+                  : "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,1) 100%)",
+                border: "1px solid rgba(0,0,0,0.05)",
+              }}
               variants={itemVariants}
-              whileHover={{ y: -2 }}
+              whileHover={{ y: -4, scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br ${stat.gradient}`}
-                  style={{ boxShadow: `0 4px 12px -2px ${stat.shadowColor}` }}
-                >
-                  <Icon className="w-4 h-4 text-white" />
-                </div>
-                {isActive && (
+              {/* Background glow on hover */}
+              <motion.div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                style={{
+                  background: `radial-gradient(circle at 30% 30%, ${stat.bgGlow} 0%, transparent 70%)`,
+                }}
+              />
+
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-4">
                   <motion.div
-                    className="w-2 h-2 rounded-full bg-indigo-500"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center bg-gradient-to-br ${stat.gradient}`}
+                    style={{ boxShadow: `0 6px 20px -4px ${stat.shadowColor}` }}
+                    whileHover={{ scale: 1.1, rotate: 5 }}
                     transition={{ type: "spring", stiffness: 400 }}
-                  />
-                )}
+                  >
+                    <Icon className="w-5 h-5 text-white" />
+                  </motion.div>
+                  {stat.trend && (
+                    <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                      <TrendingUp className="w-3 h-3" />
+                      {stat.trend}
+                    </span>
+                  )}
+                </div>
+                <p className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</p>
+                <p className="text-sm font-semibold text-slate-700">{stat.label}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{stat.description}</p>
               </div>
-              <p className="text-2xl font-bold text-slate-900 mb-0.5">{stat.value}</p>
-              <p className="text-xs text-slate-500 font-medium">{stat.label}</p>
+
+              {/* Active indicator */}
+              {isActive && (
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0468D7] to-[#6366f1]"
+                  layoutId="activeIndicator"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
             </motion.button>
           );
         })}
       </motion.section>
 
-      {/* Search & Filters Bar */}
+      {/* Premium Search & Filters Bar */}
       <motion.section
-        className="flex flex-col lg:flex-row gap-3"
+        className="relative overflow-hidden rounded-2xl p-1"
+        style={{
+          background: "linear-gradient(135deg, rgba(4, 104, 215, 0.08) 0%, rgba(99, 102, 241, 0.05) 100%)",
+        }}
         variants={itemVariants}
       >
-        {/* Search Input */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search content, tags, or topics..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 outline-none transition-all text-sm text-slate-800 placeholder:text-slate-400"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-slate-100 text-slate-400"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-
-        {/* Quick Filters */}
-        <div className="flex items-center gap-2">
-          {/* Tags Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all",
-                selectedTag
-                  ? "border-indigo-200 bg-indigo-50 text-indigo-600"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-              )}
-            >
-              <Tag className="w-4 h-4" />
-              {selectedTag || "All Tags"}
-              <ChevronDown className={cn("w-4 h-4 transition-transform", showFilters && "rotate-180")} />
-            </button>
-
-            <AnimatePresence>
-              {showFilters && (
-                <motion.div
-                  className="absolute top-full mt-2 right-0 w-48 bg-white rounded-xl border border-slate-200 shadow-xl z-20 py-2"
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  <button
-                    onClick={() => { setSelectedTag(null); setShowFilters(false); }}
-                    className={cn(
-                      "w-full px-3 py-2 text-left text-sm hover:bg-slate-50 transition-colors",
-                      !selectedTag ? "text-indigo-600 font-medium bg-indigo-50" : "text-slate-600"
-                    )}
-                  >
-                    All Tags
-                  </button>
-                  {allTags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => { setSelectedTag(tag); setShowFilters(false); }}
-                      className={cn(
-                        "w-full px-3 py-2 text-left text-sm hover:bg-slate-50 transition-colors",
-                        selectedTag === tag ? "text-indigo-600 font-medium bg-indigo-50" : "text-slate-600"
-                      )}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+        <div className="flex flex-col lg:flex-row gap-3 p-4 bg-white/80 backdrop-blur-xl rounded-xl">
+          {/* Search Input */}
+          <div className="flex-1 relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#0468D7] transition-colors" />
+            <input
+              type="text"
+              placeholder="Search content, tags, topics..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-slate-100 bg-slate-50/50 focus:border-[#0468D7] focus:bg-white focus:ring-4 focus:ring-[#0468D7]/10 outline-none transition-all text-sm text-slate-800 placeholder:text-slate-400 font-medium"
+            />
+            {searchQuery && (
+              <motion.button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <X className="w-4 h-4" />
+              </motion.button>
+            )}
           </div>
 
-          {/* View Toggle */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={cn(
-                "p-2 rounded-md transition-all",
-                viewMode === "grid" ? "bg-white shadow-sm text-slate-900" : "text-slate-400 hover:text-slate-600"
-              )}
-            >
-              <Grid3X3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={cn(
-                "p-2 rounded-md transition-all",
-                viewMode === "list" ? "bg-white shadow-sm text-slate-900" : "text-slate-400 hover:text-slate-600"
-              )}
-            >
-              <List className="w-4 h-4" />
-            </button>
+          {/* Filters Row */}
+          <div className="flex items-center gap-3">
+            {/* Tags Dropdown */}
+            <div className="relative">
+              <motion.button
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all",
+                  selectedTag
+                    ? "bg-[#0468D7]/10 text-[#0468D7] border-2 border-[#0468D7]/20"
+                    : "bg-slate-50 text-slate-600 border-2 border-transparent hover:bg-slate-100"
+                )}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Tag className="w-4 h-4" />
+                {selectedTag || "All Tags"}
+                <ChevronDown className={cn("w-4 h-4 transition-transform", showFilters && "rotate-180")} />
+              </motion.button>
+
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div
+                    className="absolute top-full mt-2 right-0 w-56 bg-white rounded-xl border border-slate-100 shadow-2xl z-30 py-2 overflow-hidden"
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <button
+                      onClick={() => { setSelectedTag(null); setShowFilters(false); }}
+                      className={cn(
+                        "w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-3",
+                        !selectedTag ? "text-[#0468D7] font-semibold bg-[#0468D7]/5" : "text-slate-600"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-2 h-2 rounded-full",
+                        !selectedTag ? "bg-[#0468D7]" : "bg-slate-300"
+                      )} />
+                      All Tags
+                    </button>
+                    {allTags.map((tag) => (
+                      <button
+                        key={tag}
+                        onClick={() => { setSelectedTag(tag); setShowFilters(false); }}
+                        className={cn(
+                          "w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-3",
+                          selectedTag === tag ? "text-[#0468D7] font-semibold bg-[#0468D7]/5" : "text-slate-600"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-2 h-2 rounded-full",
+                          selectedTag === tag ? "bg-[#0468D7]" : "bg-slate-300"
+                        )} />
+                        {tag}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* View Toggle - Premium */}
+            <div className="flex items-center gap-1 p-1.5 bg-slate-100 rounded-xl">
+              {[
+                { mode: "grid" as const, icon: Grid3X3 },
+                { mode: "list" as const, icon: List },
+              ].map(({ mode, icon: Icon }) => (
+                <motion.button
+                  key={mode}
+                  onClick={() => setViewMode(mode)}
+                  className={cn(
+                    "p-2.5 rounded-lg transition-all",
+                    viewMode === mode
+                      ? "bg-white shadow-md text-[#0468D7]"
+                      : "text-slate-400 hover:text-slate-600"
+                  )}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Icon className="w-4 h-4" />
+                </motion.button>
+              ))}
+            </div>
           </div>
         </div>
       </motion.section>
 
-      {/* Featured Content Banner */}
+      {/* Featured Content Banner - Premium Glassmorphism */}
       {featuredContent && !searchQuery && !selectedStatus && !selectedTag && (
         <motion.section
-          className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5 border border-indigo-100 p-5"
+          className="relative overflow-hidden rounded-2xl"
           variants={itemVariants}
         >
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0">
-              <Star className="w-5 h-5 text-white" />
-            </div>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(135deg, rgba(4, 104, 215, 0.08) 0%, rgba(99, 102, 241, 0.05) 50%, rgba(139, 92, 246, 0.03) 100%)",
+            }}
+          />
+          <div
+            className="absolute inset-0 opacity-50"
+            style={{
+              background: "radial-gradient(ellipse at 0% 50%, rgba(4, 104, 215, 0.15) 0%, transparent 50%)",
+            }}
+          />
+          <div className="absolute inset-0 border border-[#0468D7]/10 rounded-2xl" />
+
+          <div className="relative z-10 p-6 flex items-center gap-5">
+            <motion.div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{
+                background: "linear-gradient(135deg, #0468D7 0%, #6366f1 100%)",
+                boxShadow: "0 8px 24px -4px rgba(4, 104, 215, 0.4)",
+              }}
+              animate={{ rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Star className="w-6 h-6 text-white" />
+            </motion.div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">Featured Content</span>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-xs font-bold text-[#0468D7] uppercase tracking-wider">Featured Content</span>
                 <span className={cn(
-                  "px-2 py-0.5 rounded-full text-[10px] font-medium",
+                  "px-2.5 py-1 rounded-full text-[11px] font-semibold",
                   statusConfig[featuredContent.status].bg,
                   statusConfig[featuredContent.status].text
                 )}>
                   {statusConfig[featuredContent.status].label}
                 </span>
               </div>
-              <h3 className="font-semibold text-slate-900 mb-1 truncate">{featuredContent.title}</h3>
-              <p className="text-sm text-slate-500 line-clamp-1">{featuredContent.sourceContent.slice(0, 100)}...</p>
+              <h3 className="font-bold text-slate-900 text-lg mb-1 truncate">{featuredContent.title}</h3>
+              <p className="text-sm text-slate-500 line-clamp-1">{featuredContent.sourceContent.slice(0, 120)}...</p>
             </div>
             <Link href={`/dashboard/content/${featuredContent.id}`}>
               <motion.button
-                className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-sm font-medium text-slate-700 hover:border-indigo-200 hover:text-indigo-600 transition-all flex items-center gap-2 whitespace-nowrap"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                className="px-5 py-3 rounded-xl text-sm font-semibold text-white flex items-center gap-2 whitespace-nowrap"
+                style={{
+                  background: "linear-gradient(135deg, #0468D7 0%, #1A68D3 100%)",
+                  boxShadow: "0 4px 16px -4px rgba(4, 104, 215, 0.4)",
+                }}
+                whileHover={{ scale: 1.03, boxShadow: "0 8px 24px -4px rgba(4, 104, 215, 0.5)" }}
+                whileTap={{ scale: 0.97 }}
               >
-                View
+                View Content
                 <ArrowRight className="w-4 h-4" />
               </motion.button>
             </Link>
@@ -460,61 +657,73 @@ export default function ContentPage() {
         </motion.section>
       )}
 
-      {/* Content Grid */}
+      {/* Content Grid - Premium Cards */}
       <motion.section
         className={cn(
           viewMode === "grid"
-            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-            : "space-y-3"
+            ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+            : "space-y-4"
         )}
         variants={containerVariants}
       >
         {filteredContent.map((item) => {
           const status = statusConfig[item.status];
           const StatusIcon = status.icon;
-          const excerpt = item.sourceContent.slice(0, 100) + (item.sourceContent.length > 100 ? "..." : "");
+          const excerpt = item.sourceContent.slice(0, 120) + (item.sourceContent.length > 120 ? "..." : "");
+          const isHovered = hoveredCard === item.id;
 
           if (viewMode === "list") {
             return (
               <motion.div
                 key={item.id}
-                className="group flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-100 hover:border-indigo-100 hover:shadow-md transition-all"
+                className="group relative flex items-center gap-5 p-5 bg-white rounded-2xl border border-slate-100 hover:border-[#0468D7]/20 transition-all duration-300"
                 variants={itemVariants}
-                whileHover={{ x: 2 }}
+                onHoverStart={() => setHoveredCard(item.id)}
+                onHoverEnd={() => setHoveredCard(null)}
+                whileHover={{ x: 4, boxShadow: "0 8px 30px -10px rgba(4, 104, 215, 0.15)" }}
               >
                 <div className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br",
+                  "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br",
                   status.gradient
-                )}>
+                )}
+                  style={{ boxShadow: `0 4px 16px -4px ${status.glow}` }}
+                >
                   <StatusIcon className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-medium text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <h3 className="font-semibold text-slate-900 truncate group-hover:text-[#0468D7] transition-colors">
                       {item.title}
                     </h3>
-                    <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0", status.bg, status.text)}>
+                    <span className={cn("px-2.5 py-1 rounded-full text-[10px] font-semibold flex-shrink-0", status.bg, status.text)}>
                       {status.label}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-500">
-                    <span>{new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                    <span className="flex items-center gap-1">
-                      {item.platforms.slice(0, 3).map((platform) => {
+                  <div className="flex items-center gap-4 text-sm text-slate-500">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      {item.platforms.slice(0, 4).map((platform) => {
                         const Icon = platformIcons[platform];
-                        return <Icon key={platform} className="w-3 h-3" style={{ color: PLATFORMS[platform].color }} />;
+                        return <Icon key={platform} className="w-4 h-4" style={{ color: PLATFORMS[platform].color }} />;
                       })}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-indigo-600 transition-all">
+                <motion.div
+                  className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  initial={{ x: 10 }}
+                  animate={{ x: isHovered ? 0 : 10 }}
+                >
+                  <button className="p-2.5 rounded-lg hover:bg-[#0468D7]/10 text-slate-400 hover:text-[#0468D7] transition-all">
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-indigo-600 transition-all">
+                  <button className="p-2.5 rounded-lg hover:bg-[#0468D7]/10 text-slate-400 hover:text-[#0468D7] transition-all">
                     <Edit3 className="w-4 h-4" />
                   </button>
-                </div>
+                </motion.div>
               </motion.div>
             );
           }
@@ -522,26 +731,41 @@ export default function ContentPage() {
           return (
             <motion.div
               key={item.id}
-              className="group relative bg-white rounded-xl border border-slate-100 hover:border-indigo-100 hover:shadow-lg transition-all duration-300 overflow-hidden"
+              className="group relative bg-white rounded-2xl border border-slate-100 hover:border-[#0468D7]/20 transition-all duration-500 overflow-hidden"
               variants={itemVariants}
-              whileHover={{ y: -4 }}
+              onHoverStart={() => setHoveredCard(item.id)}
+              onHoverEnd={() => setHoveredCard(null)}
+              initial="rest"
+              whileHover="hover"
+              animate="rest"
             >
-              {/* Status Bar */}
-              <div className={cn("h-1 bg-gradient-to-r", status.gradient)} />
+              {/* Glow effect on hover */}
+              <motion.div
+                className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                style={{
+                  background: `linear-gradient(135deg, rgba(4, 104, 215, 0.1) 0%, transparent 50%, rgba(99, 102, 241, 0.05) 100%)`,
+                }}
+              />
 
-              {/* Content */}
-              <div className="p-5">
+              {/* Status gradient bar */}
+              <div className={cn("h-1.5 bg-gradient-to-r", status.gradient)} />
+
+              {/* Card content */}
+              <div className="relative p-6">
                 {/* Header */}
-                <div className="flex items-start justify-between mb-3">
-                  <span className={cn(
-                    "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
-                    status.bg, status.text
-                  )}>
-                    <StatusIcon className="w-3 h-3" />
+                <div className="flex items-start justify-between mb-4">
+                  <motion.span
+                    className={cn(
+                      "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold",
+                      status.bg, status.text
+                    )}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <StatusIcon className="w-3.5 h-3.5" />
                     {status.label}
-                  </span>
+                  </motion.span>
                   <motion.button
-                    className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 opacity-0 group-hover:opacity-100 transition-all"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                   >
@@ -550,128 +774,152 @@ export default function ContentPage() {
                 </div>
 
                 {/* Title */}
-                <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                <h3 className="font-bold text-slate-900 text-lg mb-3 line-clamp-2 group-hover:text-[#0468D7] transition-colors">
                   {item.title}
                 </h3>
 
                 {/* Excerpt */}
-                <p className="text-sm text-slate-500 line-clamp-2 mb-4">
+                <p className="text-sm text-slate-500 line-clamp-2 mb-5 leading-relaxed">
                   {excerpt}
                 </p>
 
                 {/* Platforms */}
-                <div className="flex items-center gap-1.5 mb-4">
+                <div className="flex items-center gap-2 mb-5">
                   {item.platforms.map((platform) => {
                     const Icon = platformIcons[platform];
                     const info = PLATFORMS[platform];
                     return (
                       <motion.div
                         key={platform}
-                        className="w-7 h-7 rounded-md flex items-center justify-center"
-                        style={{ backgroundColor: `${info.color}12` }}
+                        className="w-9 h-9 rounded-xl flex items-center justify-center"
+                        style={{
+                          backgroundColor: `${info.color}10`,
+                          border: `1px solid ${info.color}20`,
+                        }}
                         title={info.name}
-                        whileHover={{ scale: 1.1 }}
+                        whileHover={{ scale: 1.15, y: -2 }}
                       >
-                        <Icon className="w-3.5 h-3.5" style={{ color: info.color }} />
+                        <Icon className="w-4 h-4" style={{ color: info.color }} />
                       </motion.div>
                     );
                   })}
                 </div>
 
                 {/* Tags */}
-                <div className="flex items-center gap-1.5 flex-wrap mb-4">
+                <div className="flex items-center gap-2 flex-wrap">
                   {item.tags.slice(0, 3).map((tag) => (
                     <span
                       key={tag}
-                      className="px-2 py-0.5 rounded-md text-[11px] bg-slate-100 text-slate-600 font-medium"
+                      className="px-2.5 py-1 rounded-lg text-xs bg-slate-100 text-slate-600 font-medium hover:bg-[#0468D7]/10 hover:text-[#0468D7] transition-colors cursor-pointer"
                     >
-                      {tag}
+                      #{tag}
                     </span>
                   ))}
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                <div className="flex items-center gap-3 text-xs text-slate-500">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              <div className="px-6 py-4 border-t border-slate-100 bg-gradient-to-r from-slate-50/80 to-white flex items-center justify-between">
+                <div className="flex items-center gap-4 text-sm text-slate-500">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-slate-400" />
+                    {new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                   </span>
                   {item.scheduledFor && (
-                    <span className="flex items-center gap-1 text-amber-600 font-medium">
-                      <Clock className="w-3.5 h-3.5" />
+                    <span className="flex items-center gap-1.5 text-amber-600 font-semibold">
+                      <Clock className="w-4 h-4" />
                       {item.scheduledFor}
                     </span>
                   )}
                 </div>
 
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <motion.div
+                  className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all"
+                  initial={{ x: 10 }}
+                  animate={{ x: isHovered ? 0 : 10 }}
+                >
                   <motion.button
-                    className="p-1.5 rounded-md hover:bg-white text-slate-400 hover:text-indigo-600 transition-all"
-                    whileHover={{ scale: 1.1 }}
+                    className="p-2 rounded-lg hover:bg-[#0468D7]/10 text-slate-400 hover:text-[#0468D7] transition-all"
+                    whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.9 }}
                     title="Preview"
                   >
                     <Eye className="w-4 h-4" />
                   </motion.button>
                   <motion.button
-                    className="p-1.5 rounded-md hover:bg-white text-slate-400 hover:text-indigo-600 transition-all"
-                    whileHover={{ scale: 1.1 }}
+                    className="p-2 rounded-lg hover:bg-[#0468D7]/10 text-slate-400 hover:text-[#0468D7] transition-all"
+                    whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.9 }}
                     title="Edit"
                   >
                     <Edit3 className="w-4 h-4" />
                   </motion.button>
                   <motion.button
-                    className="p-1.5 rounded-md hover:bg-white text-slate-400 hover:text-indigo-600 transition-all"
-                    whileHover={{ scale: 1.1 }}
+                    className="p-2 rounded-lg hover:bg-[#0468D7]/10 text-slate-400 hover:text-[#0468D7] transition-all"
+                    whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.9 }}
                     title="Duplicate"
                   >
                     <Copy className="w-4 h-4" />
                   </motion.button>
                   <motion.button
-                    className="p-1.5 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all"
-                    whileHover={{ scale: 1.1 }}
+                    className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all"
+                    whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.9 }}
                     title="Delete"
                   >
                     <Trash2 className="w-4 h-4" />
                   </motion.button>
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           );
         })}
       </motion.section>
 
-      {/* Empty State */}
+      {/* Empty State - Premium */}
       <AnimatePresence>
         {filteredContent.length === 0 && (
           <motion.div
-            className="text-center py-16 bg-white rounded-xl border border-slate-100"
+            className="relative overflow-hidden text-center py-20 bg-gradient-to-br from-slate-50 to-white rounded-2xl border border-slate-100"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
           >
-            <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-6 h-6 text-slate-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">No content found</h3>
-            <p className="text-slate-500 mb-6 max-w-sm mx-auto text-sm">
+            <div
+              className="absolute inset-0 opacity-30"
+              style={{
+                background: "radial-gradient(circle at 50% 30%, rgba(4, 104, 215, 0.1) 0%, transparent 50%)",
+              }}
+            />
+            <motion.div
+              className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6"
+              style={{
+                background: "linear-gradient(135deg, rgba(4, 104, 215, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)",
+                border: "1px solid rgba(4, 104, 215, 0.1)",
+              }}
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <FileText className="w-8 h-8 text-[#0468D7]" />
+            </motion.div>
+            <h3 className="text-xl font-bold text-slate-900 mb-3">No content found</h3>
+            <p className="text-slate-500 mb-8 max-w-md mx-auto">
               Try adjusting your search or filters, or create new content to get started.
             </p>
             <Link href="/dashboard/create">
-              <Button
-                className="relative overflow-hidden group"
-                style={{
-                  background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)",
-                }}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create your first content
-              </Button>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <Button
+                  className="relative overflow-hidden group h-12 px-6 font-semibold"
+                  style={{
+                    background: "linear-gradient(135deg, #0468D7 0%, #1A68D3 50%, #6366f1 100%)",
+                    boxShadow: "0 8px 32px -8px rgba(4, 104, 215, 0.4)",
+                  }}
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Create your first content
+                </Button>
+              </motion.div>
             </Link>
           </motion.div>
         )}
@@ -680,72 +928,106 @@ export default function ContentPage() {
       {/* Footer Stats */}
       {filteredContent.length > 0 && (
         <motion.section
-          className="flex items-center justify-between text-sm"
+          className="flex items-center justify-between py-2"
           variants={itemVariants}
         >
-          <p className="text-slate-500">
-            Showing <span className="font-semibold text-slate-900">{filteredContent.length}</span> of{" "}
-            <span className="font-semibold text-slate-900">{seedContentLibrary.length}</span> items
+          <p className="text-sm text-slate-500">
+            Showing <span className="font-bold text-slate-900">{filteredContent.length}</span> of{" "}
+            <span className="font-bold text-slate-900">{seedContentLibrary.length}</span> items
           </p>
-          <button className="flex items-center gap-1.5 text-indigo-600 font-medium hover:text-indigo-700 transition-colors">
-            <SlidersHorizontal className="w-4 h-4" />
+          <button className="flex items-center gap-2 text-[#0468D7] font-semibold text-sm hover:text-[#1A68D3] transition-colors group">
+            <Filter className="w-4 h-4" />
             Advanced Filters
+            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         </motion.section>
       )}
 
-      {/* Bottom CTA */}
+      {/* Bottom CTA - Premium Glassmorphism */}
       <motion.section
-        className="relative overflow-hidden rounded-xl"
+        className="relative overflow-hidden rounded-2xl"
         variants={itemVariants}
       >
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(168, 85, 247, 0.04) 100%)",
+            background: "linear-gradient(135deg, #030712 0%, #0f172a 40%, #1e1b4b 100%)",
           }}
         />
-        <div className="absolute inset-0 border border-indigo-100 rounded-xl" />
+        <div
+          className="absolute inset-0 opacity-60"
+          style={{
+            background: `
+              radial-gradient(ellipse 60% 40% at 20% 50%, rgba(4, 104, 215, 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse 40% 30% at 80% 60%, rgba(139, 92, 246, 0.2) 0%, transparent 50%)
+            `,
+          }}
+        />
 
-        <div className="relative z-10 px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+        {/* Animated particles */}
+        {mounted && [...Array(4)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 rounded-full bg-white/40"
+            style={{
+              left: `${20 + i * 20}%`,
+              top: `${30 + (i % 2) * 40}%`,
+            }}
+            animate={{
+              y: [0, -15, 0],
+              opacity: [0.3, 0.7, 0.3],
+            }}
+            transition={{
+              duration: 2.5 + i * 0.3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: i * 0.4,
+            }}
+          />
+        ))}
+
+        <div className="relative z-10 px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
             <motion.div
-              className="w-11 h-11 rounded-xl flex items-center justify-center"
+              className="w-14 h-14 rounded-2xl flex items-center justify-center"
               style={{
-                background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
-                boxShadow: "0 4px 16px -4px rgba(99, 102, 241, 0.4)",
+                background: "linear-gradient(135deg, #0468D7 0%, #6366f1 100%)",
+                boxShadow: "0 8px 32px -8px rgba(4, 104, 215, 0.6)",
               }}
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.05, 1] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <Sparkles className="w-5 h-5 text-white" />
+              <Sparkles className="w-6 h-6 text-white" />
             </motion.div>
             <div>
-              <h3 className="font-semibold text-slate-900">
+              <h3 className="font-bold text-white text-lg">
                 Need fresh content ideas?
               </h3>
-              <p className="text-slate-500 text-sm">
-                Let AI generate engaging content optimized for each platform.
+              <p className="text-white/50 text-sm">
+                Let AI generate engaging content optimized for every platform.
               </p>
             </div>
           </div>
           <Link href="/dashboard/create">
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Button
-                className="relative overflow-hidden group font-medium whitespace-nowrap"
+                className="relative overflow-hidden group font-semibold whitespace-nowrap h-12 px-6"
                 style={{
-                  background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)",
-                  boxShadow: "0 4px 16px -4px rgba(99, 102, 241, 0.4)",
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  color: "white",
                 }}
               >
                 <motion.div
-                  className="absolute inset-0 bg-white/20"
-                  initial={{ y: "100%" }}
-                  whileHover={{ y: "0%" }}
+                  className="absolute inset-0 bg-gradient-to-r from-[#0468D7] to-[#6366f1]"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "0%" }}
                   transition={{ duration: 0.3 }}
                 />
-                <Zap className="w-4 h-4 mr-2 relative z-10" />
+                <Zap className="w-5 h-5 mr-2 relative z-10" />
                 <span className="relative z-10">Generate with AI</span>
+                <ArrowRight className="w-4 h-4 ml-2 relative z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Button>
             </motion.div>
           </Link>

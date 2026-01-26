@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -24,9 +25,14 @@ import {
   CheckCircle2,
   Plus,
   Edit3,
+  Loader2,
+  X,
+  Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { seedCurrentUser, seedTeamMembers, seedPricingPlans, seedDashboardStats } from "@/lib/seed-data";
+import { useAuth } from "@/lib/auth";
+import { fileToBase64 } from "@/lib/auth/auth";
 
 interface SettingsSection {
   id: string;
@@ -76,10 +82,113 @@ const creditsPercent = (creditsRemaining / seedDashboardStats.aiCreditsTotal) * 
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = React.useState("profile");
   const [mounted, setMounted] = React.useState(false);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [saveSuccess, setSaveSuccess] = React.useState(false);
+  const [imageUploading, setImageUploading] = React.useState(false);
+
+  // Profile form state
+  const [firstName, setFirstName] = React.useState("");
+  const [lastName, setLastName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [company, setCompany] = React.useState("");
+  const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const { user, updateProfile } = useAuth();
+
+  // Get current user - use auth user if available, otherwise seed data
+  const currentUser = user || seedCurrentUser;
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Initialize form with user data
+  React.useEffect(() => {
+    if (currentUser) {
+      setFirstName(currentUser.firstName);
+      setLastName(currentUser.lastName);
+      setEmail(currentUser.email);
+      setCompany(currentUser.company);
+      setAvatarPreview(currentUser.avatarUrl || null);
+    }
+  }, [currentUser]);
+
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image size must be less than 5MB");
+      return;
+    }
+
+    setImageUploading(true);
+
+    try {
+      const base64 = await fileToBase64(file);
+      setAvatarPreview(base64);
+
+      // Auto-save avatar
+      const result = await updateProfile({ avatarUrl: base64 });
+      if (result.success) {
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 2000);
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      alert("Failed to upload image");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  // Handle profile save
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+
+    try {
+      const result = await updateProfile({
+        firstName,
+        lastName,
+        email,
+        company,
+        avatarUrl: avatarPreview || undefined,
+      });
+
+      if (result.success) {
+        setSaveSuccess(true);
+        setIsEditing(false);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        alert(result.error || "Failed to save profile");
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert("An error occurred while saving");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Remove avatar
+  const handleRemoveAvatar = async () => {
+    setAvatarPreview(null);
+    const result = await updateProfile({ avatarUrl: undefined });
+    if (result.success) {
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -336,6 +445,21 @@ export default function SettingsPage() {
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
+                  {/* Success Toast */}
+                  <AnimatePresence>
+                    {saveSuccess && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                        className="fixed top-24 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-xl bg-emerald-500 text-white shadow-lg"
+                      >
+                        <CheckCircle2 className="w-5 h-5" />
+                        <span className="font-semibold">Profile saved successfully!</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* Profile Card */}
                   <div
                     className="relative overflow-hidden rounded-2xl"
@@ -358,26 +482,61 @@ export default function SettingsPage() {
 
                     <div className="relative z-10 p-8">
                       <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                        {/* Avatar */}
+                        {/* Avatar with Upload */}
                         <motion.div
                           className="relative group"
                           whileHover={{ scale: 1.02 }}
                         >
-                          <div
-                            className="w-28 h-28 rounded-2xl flex items-center justify-center text-4xl font-bold text-white"
-                            style={{
-                              background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)",
-                              boxShadow: "0 8px 32px -8px rgba(99, 102, 241, 0.5)",
-                            }}
-                          >
-                            {seedCurrentUser.firstName[0]}{seedCurrentUser.lastName[0]}
-                          </div>
+                          {avatarPreview ? (
+                            <div className="relative w-28 h-28 rounded-2xl overflow-hidden">
+                              <Image
+                                src={avatarPreview}
+                                alt="Profile"
+                                fill
+                                className="object-cover"
+                              />
+                              {/* Remove Button */}
+                              <motion.button
+                                onClick={handleRemoveAvatar}
+                                className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <X className="w-3 h-3 text-white" />
+                              </motion.button>
+                            </div>
+                          ) : (
+                            <div
+                              className="w-28 h-28 rounded-2xl flex items-center justify-center text-4xl font-bold text-white"
+                              style={{
+                                background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)",
+                                boxShadow: "0 8px 32px -8px rgba(99, 102, 241, 0.5)",
+                              }}
+                            >
+                              {firstName?.[0] || currentUser.firstName[0]}{lastName?.[0] || currentUser.lastName[0]}
+                            </div>
+                          )}
+
+                          {/* Upload Button */}
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            accept="image/*"
+                            className="hidden"
+                          />
                           <motion.button
-                            className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-lg"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={imageUploading}
+                            className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-lg disabled:opacity-50"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
                           >
-                            <Camera className="w-5 h-5 text-slate-700" />
+                            {imageUploading ? (
+                              <Loader2 className="w-5 h-5 text-slate-700 animate-spin" />
+                            ) : (
+                              <Camera className="w-5 h-5 text-slate-700" />
+                            )}
                           </motion.button>
                         </motion.div>
 
@@ -385,7 +544,7 @@ export default function SettingsPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h2 className="text-2xl font-bold text-white">
-                              {seedCurrentUser.firstName} {seedCurrentUser.lastName}
+                              {firstName || currentUser.firstName} {lastName || currentUser.lastName}
                             </h2>
                             <span
                               className="px-2.5 py-1 rounded-lg text-[10px] font-bold"
@@ -398,11 +557,11 @@ export default function SettingsPage() {
                               VERIFIED
                             </span>
                           </div>
-                          <p className="text-white/50 mb-4">{seedCurrentUser.email}</p>
+                          <p className="text-white/50 mb-4">{email || currentUser.email}</p>
                           <div className="flex flex-wrap gap-3">
                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10">
                               <Building2 className="w-4 h-4 text-white/50" />
-                              <span className="text-sm text-white/80">{seedCurrentUser.company}</span>
+                              <span className="text-sm text-white/80">{company || currentUser.company}</span>
                             </div>
                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10">
                               <Crown className="w-4 h-4 text-amber-400" />
@@ -413,12 +572,18 @@ export default function SettingsPage() {
 
                         {/* Edit Button */}
                         <motion.button
-                          className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-white/10 border border-white/15 hover:bg-white/15 transition-all"
+                          onClick={() => setIsEditing(!isEditing)}
+                          className={cn(
+                            "px-5 py-2.5 rounded-xl text-sm font-semibold transition-all",
+                            isEditing
+                              ? "bg-white text-slate-900"
+                              : "text-white bg-white/10 border border-white/15 hover:bg-white/15"
+                          )}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
                           <Edit3 className="w-4 h-4 inline mr-2" />
-                          Edit Profile
+                          {isEditing ? "Cancel" : "Edit Profile"}
                         </motion.button>
                       </div>
                     </div>
@@ -433,48 +598,236 @@ export default function SettingsPage() {
                       boxShadow: "0 4px 20px -4px rgba(0,0,0,0.05)",
                     }}
                   >
-                    <h3 className="text-lg font-bold text-slate-900 mb-6">Personal Information</h3>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-bold text-slate-900">Personal Information</h3>
+                      {!isEditing && (
+                        <span className="text-xs text-slate-400">Click &quot;Edit Profile&quot; to make changes</span>
+                      )}
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {[
-                        { label: "First Name", value: seedCurrentUser.firstName, icon: User },
-                        { label: "Last Name", value: seedCurrentUser.lastName, icon: User },
-                        { label: "Email Address", value: seedCurrentUser.email, icon: Mail },
-                        { label: "Company", value: seedCurrentUser.company, icon: Building2 },
-                      ].map((field, index) => (
-                        <motion.div
-                          key={field.label}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <label className="block text-sm font-medium text-slate-700 mb-2">
-                            {field.label}
-                          </label>
-                          <div className="relative">
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                              <field.icon className="w-4 h-4 text-slate-400" />
-                            </div>
-                            <input
-                              type="text"
-                              defaultValue={field.value}
-                              className="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                            />
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0 }}
+                      >
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          First Name
+                        </label>
+                        <div className="relative">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                            <User className="w-4 h-4 text-slate-400" />
                           </div>
-                        </motion.div>
-                      ))}
+                          <input
+                            type="text"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            disabled={!isEditing}
+                            className={cn(
+                              "w-full pl-11 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm transition-all",
+                              isEditing
+                                ? "focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                : "cursor-not-allowed opacity-70"
+                            )}
+                          />
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                      >
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Last Name
+                        </label>
+                        <div className="relative">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                            <User className="w-4 h-4 text-slate-400" />
+                          </div>
+                          <input
+                            type="text"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            disabled={!isEditing}
+                            className={cn(
+                              "w-full pl-11 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm transition-all",
+                              isEditing
+                                ? "focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                : "cursor-not-allowed opacity-70"
+                            )}
+                          />
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Email Address
+                        </label>
+                        <div className="relative">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                            <Mail className="w-4 h-4 text-slate-400" />
+                          </div>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            disabled={!isEditing}
+                            className={cn(
+                              "w-full pl-11 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm transition-all",
+                              isEditing
+                                ? "focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                : "cursor-not-allowed opacity-70"
+                            )}
+                          />
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                      >
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Company
+                        </label>
+                        <div className="relative">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                            <Building2 className="w-4 h-4 text-slate-400" />
+                          </div>
+                          <input
+                            type="text"
+                            value={company}
+                            onChange={(e) => setCompany(e.target.value)}
+                            disabled={!isEditing}
+                            className={cn(
+                              "w-full pl-11 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm transition-all",
+                              isEditing
+                                ? "focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                : "cursor-not-allowed opacity-70"
+                            )}
+                          />
+                        </div>
+                      </motion.div>
                     </div>
 
+                    {/* Image Upload Area */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                      className="mt-6 pt-6 border-t border-slate-100"
+                    >
+                      <label className="block text-sm font-medium text-slate-700 mb-3">
+                        Profile Photo
+                      </label>
+                      <div className="flex items-center gap-6">
+                        {/* Current Photo Preview */}
+                        <div className="relative">
+                          {avatarPreview ? (
+                            <div className="relative w-20 h-20 rounded-xl overflow-hidden">
+                              <Image
+                                src={avatarPreview}
+                                alt="Profile preview"
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div
+                              className="w-20 h-20 rounded-xl flex items-center justify-center text-2xl font-bold text-white"
+                              style={{
+                                background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+                              }}
+                            >
+                              {firstName?.[0]}{lastName?.[0]}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Upload Controls */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <motion.button
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={imageUploading}
+                              className="px-4 py-2 rounded-xl text-sm font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all disabled:opacity-50"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              {imageUploading ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="w-4 h-4 inline mr-2" />
+                                  Upload Photo
+                                </>
+                              )}
+                            </motion.button>
+                            {avatarPreview && (
+                              <motion.button
+                                onClick={handleRemoveAvatar}
+                                className="px-4 py-2 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                              >
+                                Remove
+                              </motion.button>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-400 mt-2">
+                            JPG, PNG or GIF. Max size 5MB. Recommended: 400x400px
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* Save Button */}
                     <div className="flex justify-end mt-6 pt-6 border-t border-slate-100">
+                      {isEditing && (
+                        <motion.button
+                          onClick={() => {
+                            setFirstName(currentUser.firstName);
+                            setLastName(currentUser.lastName);
+                            setEmail(currentUser.email);
+                            setCompany(currentUser.company);
+                            setIsEditing(false);
+                          }}
+                          className="px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-all mr-3"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          Cancel
+                        </motion.button>
+                      )}
                       <motion.button
-                        className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white"
+                        onClick={handleSaveProfile}
+                        disabled={!isEditing || isSaving}
+                        className={cn(
+                          "px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all",
+                          !isEditing && "opacity-50 cursor-not-allowed"
+                        )}
                         style={{
                           background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-                          boxShadow: "0 4px 16px -4px rgba(99, 102, 241, 0.5)",
+                          boxShadow: isEditing ? "0 4px 16px -4px rgba(99, 102, 241, 0.5)" : "none",
                         }}
-                        whileHover={{ scale: 1.02, boxShadow: "0 8px 24px -4px rgba(99, 102, 241, 0.6)" }}
-                        whileTap={{ scale: 0.98 }}
+                        whileHover={isEditing ? { scale: 1.02, boxShadow: "0 8px 24px -4px rgba(99, 102, 241, 0.6)" } : {}}
+                        whileTap={isEditing ? { scale: 0.98 } : {}}
                       >
-                        Save Changes
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Save Changes"
+                        )}
                       </motion.button>
                     </div>
                   </div>

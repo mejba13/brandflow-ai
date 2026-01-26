@@ -2,6 +2,7 @@
 
 import { ClerkProvider } from "@clerk/nextjs";
 import { ReactNode } from "react";
+import { AuthProvider as CustomAuthProvider } from "@/lib/auth";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -12,9 +13,9 @@ const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 const isClerkConfigured = clerkPubKey && clerkPubKey.startsWith("pk_");
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  // If Clerk is not configured, render children without auth
+  // If Clerk is not configured, use custom auth with seed data
   if (!isClerkConfigured) {
-    return <>{children}</>;
+    return <CustomAuthProvider>{children}</CustomAuthProvider>;
   }
 
   return (

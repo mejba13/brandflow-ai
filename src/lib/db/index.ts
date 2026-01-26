@@ -36,6 +36,9 @@ export function getDatabase() {
 export const db = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, {
   get(_, prop) {
     const database = getDatabase();
+    if (!database) {
+      throw new Error("Database not available - DATABASE_URL not configured");
+    }
     const value = database[prop as keyof typeof database];
     if (typeof value === "function") {
       return value.bind(database);

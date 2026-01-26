@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import NextImage from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
@@ -25,9 +26,11 @@ import {
   Hash,
   Image,
   Users,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { seedNotifications, seedCurrentUser, seedDashboardStats } from "@/lib/seed-data";
+import { useAuth } from "@/lib/auth";
 
 interface HeaderProps {
   sidebarCollapsed?: boolean;
@@ -64,12 +67,18 @@ const trendingSearches = [
 
 export function Header({ sidebarCollapsed = false, onMenuClick }: HeaderProps) {
   const [notificationsOpen, setNotificationsOpen] = React.useState(false);
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const [searchFocused, setSearchFocused] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
   const [mounted, setMounted] = React.useState(false);
   const notificationsRef = React.useRef<HTMLDivElement>(null);
+  const userMenuRef = React.useRef<HTMLDivElement>(null);
   const searchRef = React.useRef<HTMLDivElement>(null);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Get user from auth context or fall back to seed data
+  const { user: authUser, logout } = useAuth();
+  const currentUser = authUser || seedCurrentUser;
 
   const unreadCount = seedNotifications.filter((n) => !n.read).length;
   const creditsRemaining = seedDashboardStats.aiCreditsTotal - seedDashboardStats.aiCreditsUsed;
@@ -84,6 +93,9 @@ export function Header({ sidebarCollapsed = false, onMenuClick }: HeaderProps) {
     const handleClickOutside = (event: MouseEvent) => {
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setNotificationsOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
       }
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setSearchFocused(false);
@@ -700,9 +712,10 @@ export function Header({ sidebarCollapsed = false, onMenuClick }: HeaderProps) {
           </AnimatePresence>
         </div>
 
-        {/* User Avatar - Premium Design */}
-        <Link href="/dashboard/settings" className="ml-1">
-          <motion.div
+        {/* User Avatar - Premium Design with Dropdown */}
+        <div className="relative ml-1" ref={userMenuRef}>
+          <motion.button
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
             className="relative group"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -717,16 +730,33 @@ export function Header({ sidebarCollapsed = false, onMenuClick }: HeaderProps) {
             />
 
             {/* Avatar */}
-            <div
-              className="relative w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold text-white transition-all"
-              style={{
-                background: "linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)",
-                boxShadow: "0 4px 16px -4px rgba(99, 102, 241, 0.5), inset 0 1px 0 rgba(255,255,255,0.2)",
-                border: "2px solid rgba(255, 255, 255, 0.2)",
-              }}
-            >
-              {seedCurrentUser.firstName[0]}{seedCurrentUser.lastName[0]}
-            </div>
+            {currentUser.avatarUrl ? (
+              <div
+                className="relative w-11 h-11 rounded-xl overflow-hidden"
+                style={{
+                  boxShadow: "0 4px 16px -4px rgba(99, 102, 241, 0.5)",
+                  border: "2px solid rgba(255, 255, 255, 0.2)",
+                }}
+              >
+                <NextImage
+                  src={currentUser.avatarUrl}
+                  alt={`${currentUser.firstName} ${currentUser.lastName}`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div
+                className="relative w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold text-white transition-all"
+                style={{
+                  background: "linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)",
+                  boxShadow: "0 4px 16px -4px rgba(99, 102, 241, 0.5), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  border: "2px solid rgba(255, 255, 255, 0.2)",
+                }}
+              >
+                {currentUser.firstName[0]}{currentUser.lastName[0]}
+              </div>
+            )}
 
             {/* Online Indicator */}
             <motion.div
@@ -743,8 +773,114 @@ export function Header({ sidebarCollapsed = false, onMenuClick }: HeaderProps) {
                 ease: "easeInOut",
               }}
             />
-          </motion.div>
-        </Link>
+          </motion.button>
+
+          {/* User Dropdown Menu */}
+          <AnimatePresence>
+            {userMenuOpen && (
+              <motion.div
+                className="absolute right-0 top-full mt-3 w-72 rounded-2xl overflow-hidden z-50"
+                style={{
+                  background: "linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%)",
+                  border: "1px solid rgba(99, 102, 241, 0.2)",
+                  boxShadow: "0 25px 80px -20px rgba(0, 0, 0, 0.5), 0 0 60px -10px rgba(99, 102, 241, 0.3)",
+                }}
+                initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.96 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              >
+                {/* User Info Header */}
+                <div
+                  className="px-5 py-4"
+                  style={{
+                    background: "rgba(99, 102, 241, 0.1)",
+                    borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    {currentUser.avatarUrl ? (
+                      <div
+                        className="w-12 h-12 rounded-xl overflow-hidden"
+                        style={{
+                          boxShadow: "0 4px 12px -4px rgba(99, 102, 241, 0.5)",
+                        }}
+                      >
+                        <NextImage
+                          src={currentUser.avatarUrl}
+                          alt={`${currentUser.firstName} ${currentUser.lastName}`}
+                          width={48}
+                          height={48}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold text-white"
+                        style={{
+                          background: "linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)",
+                          boxShadow: "0 4px 12px -4px rgba(99, 102, 241, 0.5)",
+                        }}
+                      >
+                        {currentUser.firstName[0]}{currentUser.lastName[0]}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-white truncate">
+                        {currentUser.firstName} {currentUser.lastName}
+                      </p>
+                      <p className="text-xs text-white/50 truncate">{currentUser.email}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/20 uppercase">
+                      {currentUser.plan}
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold text-white/60 bg-white/5 border border-white/10">
+                      {currentUser.role}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Menu Items */}
+                <div className="p-2">
+                  <Link
+                    href="/dashboard/settings"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <motion.div
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all group"
+                      whileHover={{ x: 4 }}
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                        <Settings className="w-4 h-4 text-indigo-400" />
+                      </div>
+                      <span className="text-sm font-medium text-white/70 group-hover:text-white transition-colors">
+                        Settings
+                      </span>
+                    </motion.div>
+                  </Link>
+
+                  <motion.button
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      logout();
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-all group"
+                    whileHover={{ x: 4 }}
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                      <LogOut className="w-4 h-4 text-red-400" />
+                    </div>
+                    <span className="text-sm font-medium text-white/70 group-hover:text-red-400 transition-colors">
+                      Sign out
+                    </span>
+                  </motion.button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </header>
   );

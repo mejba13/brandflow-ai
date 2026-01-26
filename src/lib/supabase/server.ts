@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 // Server-side Supabase client (uses service role key)
 export function createServerClient() {
@@ -18,7 +18,8 @@ export function createServerClient() {
 }
 
 // Singleton for server client
-let serverClient: ReturnType<typeof createClient> | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let serverClient: SupabaseClient<any, any, any> | null = null;
 
 export function getSupabaseServerClient() {
   if (!serverClient) {
