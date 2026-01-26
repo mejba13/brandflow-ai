@@ -1,0 +1,45 @@
+# Supabase CLI Configuration
+# https://supabase.com/docs/guides/cli/config
+
+[project]
+id = "your-project-ref"
+name = "brandflow-ai"
+
+[db]
+# Port to use for the local database URL
+port = 54322
+# The database major version to use
+major_version = 15
+
+[studio]
+# Port to use for Supabase Studio
+port = 54323
+
+[inbucket]
+# Port to use for the email testing server
+port = 54324
+
+[storage]
+# Port for local storage service
+port = 54325
+
+[auth]
+# Port for local auth service
+port = 54326
+# Enable sign up
+enable_signup = true
+
+[auth.email]
+# Enable email confirmations
+enable_confirmations = false
+
+[functions]
+# Port for edge functions
+port = 54327
+
+[analytics]
+enabled = false
+
+[experimental]
+# Use orioledb for faster performance (optional)
+orioledb_version = ""
