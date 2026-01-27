@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-BrandFlow AI is an AI-powered social media automation platform that transforms single content inputs into platform-optimized posts for LinkedIn, Facebook, Twitter/X, Instagram, Pinterest, and TikTok. Built with Next.js 15 (App Router), tRPC, Drizzle ORM, and Clerk authentication.
+BrandFlow AI is an AI-powered social media automation platform that transforms single content inputs into platform-optimized posts for LinkedIn, Facebook, Twitter/X, Instagram, Pinterest, and TikTok. Built with Next.js 15 (App Router), tRPC v11, Drizzle ORM, and Clerk authentication.
 
 ## Development Commands
 
@@ -28,9 +28,13 @@ pnpm db:studio            # Open Drizzle Studio
 
 ## Architecture
 
-### Route Groups
+### Route Groups (src/app/)
 - `(auth)/` - Login/signup pages using Clerk components
 - `(dashboard)/` - Protected dashboard routes with sidebar layout
+  - `dashboard/` - Main dashboard pages (analytics, calendar, content, create, settings, accounts, brand-kit)
+- `api/trpc/` - tRPC endpoint
+- `api/webhooks/` - Clerk & Stripe webhooks
+- `api/auth/` - Social platform OAuth callbacks
 
 ### tRPC Structure
 All API logic lives in `src/lib/trpc/`:
@@ -40,8 +44,14 @@ All API logic lives in `src/lib/trpc/`:
   - `orgProcedure` - Requires user + organization context
 - `root.ts` - Main router combining all sub-routers
 - `routers/` - Domain routers (content, ai, analytics, socialAccount, subscription, user, organization)
+- `context.ts` - Creates tRPC context with `db`, `userId`, and `organizationId` from Clerk
 
-### Database Schema
+### Database
+- **ORM**: Drizzle with PostgreSQL (Neon recommended)
+- **Config**: `drizzle.config.ts` points to `src/lib/db/schema/index.ts`
+- **Migrations**: Output to `./drizzle` directory
+- **Client**: `src/lib/db/index.ts` - Lazy-initialized singleton with proxy pattern
+
 Schema files in `src/lib/db/schema/`:
 - All tables use UUID primary keys
 - Soft deletes via `deletedAt` timestamp
@@ -51,12 +61,28 @@ Schema files in `src/lib/db/schema/`:
 Content flow: `sourceContent` → `contentVariations` (per platform) → `scheduledPosts`
 
 ### Auth Flow
-Middleware (`src/middleware.ts`) conditionally applies Clerk protection:
-- If `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set, enforces auth on non-public routes
-- Without Clerk config, all routes are accessible (development mode)
+Middleware (`src/middleware.ts`) supports two modes:
+- **Clerk mode**: If `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set, uses Clerk middleware for protected routes
+- **Dev mode**: Falls back to cookie-based auth (`brandflow_session` cookie) when Clerk is not configured
+
+Public routes: `/`, `/login`, `/signup`, `/pricing`, `/features`, `/about`, `/api/webhooks`
+
+### AI Integration
+Located in `src/lib/ai/`:
+- `openai.ts` - Lazy-initialized OpenAI client with proxy pattern
+- `content-generator.ts` - Platform content transformation
+- `image-generator.ts` - DALL-E image generation
+- Models: GPT-4 Turbo for content, DALL-E 3/2 for images
 
 ### UI Components
-Components use class-variance-authority (CVA) for variants. Located in `src/components/ui/`.
+Located in `src/components/ui/`. Components use:
+- class-variance-authority (CVA) for variants
+- CSS variables from `globals.css` for theming
+- `cn()` utility from `src/lib/utils` for class merging (clsx + tailwind-merge)
+
+### State Management
+- **Server state**: TanStack Query (via @trpc/react-query)
+- **Client state**: Zustand for local UI state
 
 ### Design System
 CSS variables defined in `src/app/globals.css`:
@@ -77,11 +103,12 @@ CSS variables defined in `src/app/globals.css`:
 
 ## Environment Variables
 
-Copy `.env.example` to `.env.local`. Key variables:
-- `DATABASE_URL` - PostgreSQL connection (Neon recommended)
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` - Auth
-- `OPENAI_API_KEY` - AI content generation
-- `STRIPE_*` - Payments
+Copy `.env.example` to `.env.local`. Key groups:
+- **Database**: `DATABASE_URL` (PostgreSQL/Neon)
+- **Auth**: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
+- **AI**: `OPENAI_API_KEY`
+- **Payments**: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- **Social OAuth**: `LINKEDIN_*`, `META_*`, `TWITTER_*`, `PINTEREST_*`, `TIKTOK_*`
 
 ## Seed Data
 

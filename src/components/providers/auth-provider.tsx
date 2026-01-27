@@ -3,6 +3,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { ReactNode } from "react";
 import { AuthProvider as CustomAuthProvider } from "@/lib/auth";
+import { SocialProvider } from "@/lib/social";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -15,7 +16,11 @@ const isClerkConfigured = clerkPubKey && clerkPubKey.startsWith("pk_");
 export function AuthProvider({ children }: AuthProviderProps) {
   // If Clerk is not configured, use custom auth with seed data
   if (!isClerkConfigured) {
-    return <CustomAuthProvider>{children}</CustomAuthProvider>;
+    return (
+      <CustomAuthProvider>
+        <SocialProvider>{children}</SocialProvider>
+      </CustomAuthProvider>
+    );
   }
 
   return (
@@ -44,7 +49,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         },
       }}
     >
-      {children}
+      <SocialProvider>{children}</SocialProvider>
     </ClerkProvider>
   );
 }

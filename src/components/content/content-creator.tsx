@@ -22,6 +22,9 @@ import {
   ChevronRight,
   Lightbulb,
   CheckCircle2,
+  Send,
+  Loader2,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PLATFORMS, CHARACTER_LIMITS, type Platform } from "@/lib/utils";
@@ -33,6 +36,8 @@ import {
   PinterestIcon,
   TikTokIcon,
 } from "@/components/icons/platform-icons";
+import { useSocial } from "@/lib/social/social-context";
+import { useSocialPost } from "@/lib/social/use-social-post";
 
 const platformIcons: Record<Platform, React.ElementType> = {
   linkedin: LinkedInIcon,
@@ -66,6 +71,39 @@ export function ContentCreator({ initialContent = "" }: ContentCreatorProps) {
   const [variations, setVariations] = React.useState<Record<Platform, string> | null>(null);
   const [copiedPlatform, setCopiedPlatform] = React.useState<Platform | null>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  // Social posting state
+  const { accounts } = useSocial();
+  const { postToTwitter, isPosting } = useSocialPost();
+  const [postResult, setPostResult] = React.useState<{
+    success: boolean;
+    message: string;
+    url?: string;
+  } | null>(null);
+
+  const twitterAccount = accounts.find(
+    (a) => a.platform === "twitter" && a.status === "connected"
+  );
+
+  const handlePostToTwitter = async () => {
+    if (!variations?.twitter) return;
+
+    setPostResult(null);
+    const result = await postToTwitter(variations.twitter);
+
+    if (result.success) {
+      setPostResult({
+        success: true,
+        message: "Tweet posted successfully!",
+        url: result.postUrl,
+      });
+    } else {
+      setPostResult({
+        success: false,
+        message: result.error || "Failed to post tweet",
+      });
+    }
+  };
 
   const togglePlatform = (platform: Platform) => {
     setSelectedPlatforms((prev) =>
@@ -728,6 +766,53 @@ export function ContentCreator({ initialContent = "" }: ContentCreatorProps) {
         </div>
       </motion.div>
 
+      {/* Post Result Banner */}
+      <AnimatePresence>
+        {postResult && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={cn(
+              "flex items-center gap-4 p-4 rounded-2xl",
+              postResult.success
+                ? "bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200"
+                : "bg-gradient-to-r from-red-50 to-rose-50 border border-red-200"
+            )}
+          >
+            {postResult.success ? (
+              <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
+                <span className="text-red-600 text-sm">!</span>
+              </div>
+            )}
+            <div className="flex-1">
+              <p className={cn("font-semibold", postResult.success ? "text-emerald-900" : "text-red-900")}>
+                {postResult.message}
+              </p>
+            </div>
+            {postResult.url && (
+              <a
+                href={postResult.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-[#1DA1F2] font-semibold hover:bg-[#1DA1F2] hover:text-white transition-all"
+              >
+                <ExternalLink className="w-4 h-4" />
+                View Tweet
+              </a>
+            )}
+            <button
+              onClick={() => setPostResult(null)}
+              className="text-slate-400 hover:text-slate-600"
+            >
+              ×
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Action Bar */}
       <motion.div
         variants={itemVariants}
@@ -755,6 +840,37 @@ export function ContentCreator({ initialContent = "" }: ContentCreatorProps) {
             <Save className="w-4 h-4" />
             Save as Draft
           </motion.button>
+
+          {/* Post to Twitter Button */}
+          {selectedPlatforms.includes("twitter") && variations?.twitter && (
+            <motion.button
+              onClick={handlePostToTwitter}
+              disabled={isPosting || !twitterAccount}
+              className={cn(
+                "flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-white transition-all",
+                !twitterAccount && "opacity-50 cursor-not-allowed"
+              )}
+              style={{
+                background: "#1DA1F2",
+                boxShadow: "0 8px 24px -6px rgba(29, 161, 242, 0.5)",
+              }}
+              whileHover={twitterAccount ? { scale: 1.02 } : {}}
+              whileTap={twitterAccount ? { scale: 0.98 } : {}}
+              title={!twitterAccount ? "Connect Twitter account first" : "Post to Twitter"}
+            >
+              {isPosting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Posting...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  Post to Twitter
+                </>
+              )}
+            </motion.button>
+          )}
 
           <motion.button
             className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white"
