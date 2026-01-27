@@ -105,6 +105,12 @@ export default function AccountsPage() {
   React.useEffect(() => {
     const hasCallback =
       searchParams.get("linkedin_connected") ||
+      searchParams.get("twitter_connected") ||
+      searchParams.get("twitter_pkce_callback") ||
+      searchParams.get("facebook_connected") ||
+      searchParams.get("instagram_connected") ||
+      searchParams.get("pinterest_connected") ||
+      searchParams.get("tiktok_connected") ||
       searchParams.get("error");
 
     if (hasCallback && !processingCallback) {

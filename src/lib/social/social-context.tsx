@@ -87,6 +87,78 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error };
       }
 
+      // Handle Twitter PKCE callback (needs client-side code_verifier)
+      const twitterPkceCallback = params.get("twitter_pkce_callback");
+      if (twitterPkceCallback === "true") {
+        const code = params.get("code");
+        const state = params.get("state");
+
+        if (!code || !state) {
+          return { success: false, error: "Missing code or state for Twitter callback" };
+        }
+
+        // Get code_verifier from stored OAuth state
+        const storedState = getOAuthState(state) as { codeVerifier?: string; platform?: string } | null;
+        if (!storedState || !storedState.codeVerifier) {
+          return { success: false, error: "Invalid OAuth state. Please try connecting again." };
+        }
+
+        try {
+          // Exchange code for token using our server endpoint
+          const response = await fetch("/api/auth/twitter/exchange", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              code,
+              state,
+              codeVerifier: storedState.codeVerifier,
+            }),
+          });
+
+          const result = await response.json();
+
+          if (!response.ok || !result.success) {
+            return { success: false, error: result.error || "Failed to complete Twitter authentication" };
+          }
+
+          // Remove used state
+          removeOAuthState(state);
+
+          // Create account object
+          const now = new Date().toISOString();
+          const accountData = result.account;
+          const newAccount: SocialAccount = {
+            id: `twitter_${accountData.platformAccountId}_${Date.now()}`,
+            platform: "twitter",
+            platformAccountId: accountData.platformAccountId,
+            displayName: accountData.displayName,
+            username: accountData.username,
+            avatarUrl: accountData.avatarUrl,
+            profileUrl: `https://twitter.com/${accountData.username}`,
+            accessToken: accountData.accessToken,
+            refreshToken: accountData.refreshToken,
+            tokenExpiresAt: accountData.expiresIn
+              ? new Date(Date.now() + accountData.expiresIn * 1000).toISOString()
+              : undefined,
+            scopes: accountData.scopes || [],
+            status: "connected",
+            followers: accountData.followers || "—",
+            lastSync: "Just now",
+            createdAt: now,
+            updatedAt: now,
+          };
+
+          // Add to storage
+          const updated = addAccount(newAccount);
+          setAccounts(updated);
+
+          return { success: true };
+        } catch (err) {
+          console.error("Twitter PKCE callback error:", err);
+          return { success: false, error: "Failed to complete Twitter authentication" };
+        }
+      }
+
       const data = params.get("data");
 
       // Check for platform connections
