@@ -19,6 +19,7 @@ import {
   Zap,
   Crown,
   LogOut,
+  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ const navGroups: NavGroup[] = [
     title: "Main",
     items: [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Quick Post", href: "/dashboard/quick-post", icon: Send },
       { label: "Content", href: "/dashboard/content", icon: FileText, badge: 3 },
       { label: "Calendar", href: "/dashboard/calendar", icon: Calendar },
       { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
