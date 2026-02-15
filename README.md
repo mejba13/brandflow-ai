@@ -10,6 +10,11 @@
 
 **AI-Powered Social Media Automation Platform**
 
+<img width="1898" height="1433" alt="landing-page" src="https://github.com/user-attachments/assets/6949dc33-c634-446b-88e0-1e5be1279d8d" />
+<img width="2073" height="1440" alt="dashboard-index" src="https://github.com/user-attachments/assets/ae5a6840-783b-4f4e-acdb-45468236f90b" />
+
+
+
 Transform a single piece of content into platform-optimized posts for LinkedIn, Facebook, Twitter/X, Instagram, Pinterest, and TikTok — all with AI-generated images and smart scheduling.
 
 [Live Demo](#) · [Documentation](#) · [Report Bug](https://github.com/mejba13/brandflow-ai/issues)
